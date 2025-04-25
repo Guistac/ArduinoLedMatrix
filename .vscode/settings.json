@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "sk6812_rgbw_strip": "cpp",
+        "initializer_list": "cpp",
+        "utility": "cpp",
+        "string": "cpp"
+    }
+}
