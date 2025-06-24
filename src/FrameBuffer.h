@@ -11,7 +11,7 @@ public:
     }
 
     void setPixelMatrix(const PixelMatrix& matrix){
-        uint32_t pixelCount = min(matrix.size, size);
+        uint32_t pixelCount = min(matrix.pixelCount, size);
         for(uint32_t i = 0; i < pixelCount; i++) pixels[i].pos = matrix.positions[i];
     }
 

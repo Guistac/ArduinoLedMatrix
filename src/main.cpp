@@ -2,11 +2,65 @@
 #include "Animations/Camille.h"
 #include "Sequencer.h"
 #include <vector>
+#include "Animations/CoulCaf.h"
+#include "SimplexNoise.h"
 
-int width = 16;
-int height = 13;
-uint32_t ledCount = width * height;
-SK6812RGBW_Strip ledStrip(14, ledCount);
+//int width = 16;
+//int height = 13;
+//uint32_t ledCount = width * height;
+SK6812RGBW_Strip ledStrip(14, 389);
+//OneWire_RGB_Strip ledStrip(0, 200);
+
+std::vector<PixelSegment> segments = {
+    PixelSegment(44, Vec2f(-896.0, 0.0), Vec2f(-212.0, -2580.0)),
+    PixelSegment(43, Vec2f(212.0, -2580.0), Vec2f(896.0, 0.0)),
+
+    PixelSegment(1, Vec2f(500.0, 0.0), Vec2f(500.0, 0.0)),
+    PixelSegment(3, Vec2f(400.0, 200.0), Vec2f(400.0, 0.0)), //2
+    PixelSegment(5, Vec2f(300.0, 0.0), Vec2f(300.0, 400.0)), //4
+    PixelSegment(6, Vec2f(200.0, 500.0), Vec2f(200.0, 0.0)), //5
+    PixelSegment(6, Vec2f(100.0, 0.0), Vec2f(100.0, 500.0)), //5
+    PixelSegment(6, Vec2f(0.0, 500.0), Vec2f(0.0, 0.0)),      //5
+    PixelSegment(6, Vec2f(-100.0, 0.0), Vec2f(-100.0, 500.0)),//5
+    PixelSegment(6, Vec2f(-200.0, 500.0), Vec2f(-200.0, 0.0)),//5
+    PixelSegment(5, Vec2f(-300.0, 0.0), Vec2f(-300.0, 400.0)),//4
+    PixelSegment(3, Vec2f(-400.0, 200.0), Vec2f(-400.0, 0.0)),//2
+    PixelSegment(1, Vec2f(-500.0, 0.0), Vec2f(-500.0, 0.0)),
+
+    PixelSegment(10, Vec2f(727,-55), Vec2f(567,-941)),
+    PixelSegment(10, Vec2f(470,-914), Vec2f(631,-29)),
+    PixelSegment(10, Vec2f(534,-2), Vec2f(374,-888)),
+
+    PixelSegment(2, Vec2f(500,-100), Vec2f(500,0)),
+    PixelSegment(6, Vec2f(400,0), Vec2f(400,-500)),
+    PixelSegment(10, Vec2f(300,-900), Vec2f(300,0)),
+    PixelSegment(10, Vec2f(200,0), Vec2f(200,-900)),
+    PixelSegment(10, Vec2f(100,-900), Vec2f(100,0)),
+    PixelSegment(10, Vec2f(0,0), Vec2f(0,-900)),
+    PixelSegment(10, Vec2f(-100,-900), Vec2f(-100,0)),
+    PixelSegment(10, Vec2f(-200,0), Vec2f(-200,-900)),
+    PixelSegment(10, Vec2f(-300,-900), Vec2f(-300,0)),
+    PixelSegment(6, Vec2f(-400,0), Vec2f(-400,-500)),
+    PixelSegment(2, Vec2f(-500,-100), Vec2f(-500,0)),
+
+    PixelSegment(10, Vec2f(-534,-2), Vec2f(-374,-888)),
+    PixelSegment(10, Vec2f(-470,-914), Vec2f(-631,-29)),
+    PixelSegment(10, Vec2f(-727,-55), Vec2f(-567,-941)),
+
+    PixelSegment(7, Vec2f(-450,-1029), Vec2f(-342,-1619)),
+    PixelSegment(17, Vec2f(-67,-2577), Vec2f(-353,-1003)),
+
+    PixelSegment(2, Vec2f(-300,-1000), Vec2f(-300,-1100)),
+    PixelSegment(7, Vec2f(-200,-1600), Vec2f(-200,-1000)),
+    PixelSegment(13, Vec2f(-100,-1000), Vec2f(-100,-2200)),
+    PixelSegment(16, Vec2f(0,-2500), Vec2f(0,-1000)),
+    PixelSegment(13, Vec2f(100,-1000), Vec2f(100,-2200)),
+    PixelSegment(7, Vec2f(200,-1600), Vec2f(200,-1000)),
+    PixelSegment(2, Vec2f(300,-1000), Vec2f(300,-1100)),
+
+    PixelSegment(17, Vec2f(67,-2577), Vec2f(353,-1003)),
+    PixelSegment(7, Vec2f(450,-1029), Vec2f(342,-1619)),
+};
 
 PondAnimation pond;
 RadarAnimation radar;
@@ -30,16 +84,39 @@ Sequencer sequencer({
 
 Time::IntervalTimer frameTimer(100.0);
 
-Vec2f middle(7.5, 6);
-FrameBuffer circleAnimation;
-FrameBuffer radiusAnimation;
-FrameBuffer pointAnimation;
-FrameBuffer randomCirclesAnimation;
-FrameBuffer boxAnimation;
+
+ArrowAnimation arrow_anim;
+LinesAnimation lines_anim;
+Chladni chladni_anim;
+Pond pond_anim;
+Animation *anim;
+
+uint8_t relays[8] = {0,1,2,3,4,5,6,7};
+
+CoulCaf coulCaf;
 
 void setup() {
-    Serial.begin(9600);
+    pinMode(13, OUTPUT);
+    randomSeed(analogRead(A0));
+    SimplexNoise::init(random(100000));
 
+    if(false){
+        pinMode(14, OUTPUT);
+        pinMode(15, OUTPUT);
+        while(true){
+            digitalWrite(14, HIGH);
+            //digitalWrite(15, HIGH);
+            digitalWrite(13, HIGH);
+            delay(500);
+            digitalWrite(14, LOW);
+            //digitalWrite(15, LOW);
+            digitalWrite(13, LOW);
+            delay(500);
+        }
+    }
+
+    /*
+    //CAMILLE
     PixelMatrix ledMatrix(ledCount);
     int c = 0;
     for(int y = 0; y < height; y++){
@@ -50,206 +127,90 @@ void setup() {
             c++;
         }
     }
+    */
+
+    PixelMatrix ledMatrix(segments);
+    ledMatrix.scale(0.01);
+    ledMatrix.flipY();
+
     ledStrip.setup();
     ledStrip.setPixelMatrix(ledMatrix);
+
+
+    coulCaf.init(ledMatrix);
+
+
     for(auto animation : animations) animation->configureMatrix(ledMatrix);
+    anim = &pond_anim;
+    anim->configureMatrix(ledMatrix);
     sequencer.configureMatrix(ledMatrix);
 
-    circleAnimation = ledStrip.getEmptyFramebuffer();
-    radiusAnimation = ledStrip.getEmptyFramebuffer();
-    pointAnimation = ledStrip.getEmptyFramebuffer();
-    randomCirclesAnimation = ledStrip.getEmptyFramebuffer();
-    boxAnimation = ledStrip.getEmptyFramebuffer();
+    for(int i = 0; i < 8; i++) pinMode(relays[i], OUTPUT);
 }
-
-float framesPerSecond = 100.0;
-uint32_t frameInterval_micros = 1000000.0 / framesPerSecond;
-uint32_t lastFrameTime_micros = 0;
 
 void loop() {
 
+    float wow = sin(float(millis()) * 0.0005);
+    for(int i = 0; i < 8; i++){
+        bool state = SimplexNoise::noise(float(millis()) * 0.001, i + wow * 5) > 0; 
+        digitalWrite(relays[i], state);
+    }
+
+
     if(frameTimer.isTriggered()){
-        sequencer.draw();
-        ledStrip.addFrameBuffer(&sequencer);
-        //pond.draw();
-        //ledStrip.addFrameBuffer(&pond);
+        //sequencer.draw();
+        //ledStrip.addFrameBuffer(&sequencer);
+
+
+
+        if(true){
+            float radius = map(sin(float(millis()) * 0.01), -1.0, 1.0, 0, 17);
+            ledStrip.clear(Color(0.0, 0.0, 0.0));
+            ledStrip.drawCircle(Vec2f(0,10), radius, 5, Color(0.0, 1.0, 0.0, 0.0));
+            ledStrip.drawCircle(Vec2f(0,10), radius * 0.8, 5, Color(0.0, 0.0, 0.0, 1.0));
+            ledStrip.drawCircle(Vec2f(0,10), radius * 0.6, 5, Color(1.0, 0.0, 0.0, 0.0));
+            ledStrip.drawCircle(Vec2f(0,10), radius * 0.4, 5, Color(1.0, 0.0, 1.0, 0.0));
+            /*
+            for(int i = 0; i < ledStrip.size; i++){
+                if(i < 44) ledStrip.setPixel(i, Color(1.0, 0.0, 0.0));
+                else if(i < 87) ledStrip.setPixel(i, Color(0.0, 0.0, 1.0));
+                else if(i < 135) ledStrip.setPixel(i, Color(0.0, 1.0, 0.0));
+                else if(i < 165) ledStrip.setPixel(i, Color(0.0, 0.0, 0.0, 1.0));
+                else if(i < 251) ledStrip.setPixel(i, Color(1.0, 0.0, 1.0, 0.0));
+                else if(i < 281) ledStrip.setPixel(i, Color(0.0, 1.0, 1.0, 0.0));
+                else if(i < 305) ledStrip.setPixel(i, Color(0.0, 1.0, 0.0, 1.0));
+                else if(i < 365) ledStrip.setPixel(i, Color(1.0, 1.0, 0.0, 1.0));
+                else if(i < 389) ledStrip.setPixel(i, Color(0.0, 0.0, 1.0, 1.0));
+                else ledStrip.setPixel(i, Color(0.0, 0.0, 0.0));
+            }
+                */
+        }
+
+        //arrow_anim.draw(); ledStrip.addFrameBuffer(&arrow_anim);
+        //anim->draw();
+        //ledStrip.addFrameBuffer(anim);
+
+
+/*
+        ledStrip.clear(Color(0.0, 1.0, 0.0, 0.0));
+        for(int i = 0; i < ledStrip.size; i++){
+        float h = (sin(float(i) * 0.3 - float(millis()) * 0.003) + 1.0) / 2.0;
+        ledStrip.setPixel(i, ColorHSV(h, 1.0, 1.0));
+        ledStrip.setPixel(i, ColorHSV(h, 1.0, 1.0));
+        ledStrip.setPixel(i, Color(0.0, 0.0, 0.0, h));
+        }
+        //x w g b
+*/
+ 
+
+        coulCaf.draw();
+        //ledStrip.addFrameBuffer(coulCaf.getFrameBuffer());
+        ledStrip.addFrameBuffer(&coulCaf.sequencer);
+
         ledStrip.display();
+
+        static bool led = true;
+        led = !led;
+        digitalWrite(13, led);
     }
-    return;
-
-
-    uint32_t now_micros = micros();
-    if(now_micros - lastFrameTime_micros < frameInterval_micros) return;
-    lastFrameTime_micros = now_micros;
-    double now_seconds = float(now_micros) / 1000000.0;
-
-
-    //concentric circles
-    for(uint32_t i = 0; i < ledCount; i++){
-        {
-            float rad = sin(now_seconds * 0.5) * 5.0;
-            Vec2f center(middle.x + sin(now_seconds) * rad, middle.y + cos(now_seconds) * rad);
-            Vec2f pos = circleAnimation.pixels[i].pos;
-            float dist = pos.dist(center);
-            float step = 10.0;
-            float b = map(fmod(-dist + now_seconds * 5 + sin(now_seconds) * 4.0, step), 0, step, 0.0, 1.0);
-            b = map(triangle(b), 0.5, 1.0, 0.0, 1.0);
-            //float noise = float(random(950, 1000)) / 1000.0;
-            //bool b_blue = random(1000) > 998;
-            float blue = map(b, 0.0, 0.2, 0.02, 0.0);
-            blue = max(blue, 0.02);
-            Color c(0.0, 0.0, blue, b);
-            circleAnimation.setPixel(i,c);
-        }
-    }
-
-    //radar radius
-    for(uint32_t i = 0; i < ledCount; i++){
-        Vec2f pos = radiusAnimation.pixels[i].pos;
-        double t_rot = 10.0 + now_seconds * .5;
-        Vec2f movPos(pos.x + sin(t_rot) * .5, pos.y + cos(t_rot) * .5);
-        double ang = atan2(movPos.x - middle.x, movPos.y - middle.y);
-        ang += t_rot;
-        ang = fmod(ang, 2 * M_PI) - M_PI;
-        double angNorm = map(ang, -M_PI, M_PI, 0.0, 1.0);
-        double br = triangle(map(angNorm, .9, 1.0, 0.0, 1.0));
-        double bll = map(br, 0.5, 1.0, 0.0, 1.0);
-        Color c(0.0, 0.0, bll, br);
-        radiusAnimation.setPixel(i, c);
-    }
-    radiusAnimation.drawCircle(middle, 2.0, 0.0, Color(0.0));
-
-    //moving circle
-    pointAnimation.clear(Color(0.0, 0.02));
-    static Time::Timer circleTimer;
-    static Vec2f circleTarget = middle;
-    static Vec2f circleActual = middle;
-    static float circleFilter = 0.025;
-    if(circleTimer.isExpired()){
-        float w = 7;
-        float h = 5;
-        Vec2f min(middle.x - w, middle.y - h);
-        Vec2f max(middle.x + w, middle.y + h);
-
-        Vec2f newTarget;
-        float moveDistance = 0.0;
-        while(moveDistance < 8.0){
-            newTarget = Vec2f(randomF(min.x, max.x), randomF(min.y, max.y));
-            moveDistance = circleTarget.dist(newTarget);
-        }
-        circleTarget = newTarget;
-
-        float newTime = randomF(2.0, 5.0);
-        circleFilter = randomF(0.001, 0.04);
-        Serial.printf("Time: %.1fs  Filter:%.3f\n", newTime, circleFilter);
-        circleTimer.start(newTime);
-    }
-    circleActual.x = iirFilter(circleActual.x, circleTarget.x, circleFilter);
-    circleActual.y = iirFilter(circleActual.y, circleTarget.y, circleFilter);
-    for(int i = 0; i < 10; i++){
-        if(random(100) > 90){
-            float hue = fmod(float(random(50, 60)) * 0.01, 1.0);
-            float brightness = random(80) * 0.01;
-            pointAnimation.setPixel(random(ledCount), ColorHSV(hue, 0.8, brightness), ADD);
-        }
-    }
-    //Vec2f pointPos(middle.x + sin(now_seconds*5) * 4, middle.y + cos(now_seconds*5) * 4);
-    Vec2f pointPos = circleActual;
-    pointAnimation.drawCircle(pointPos, 2.0, 3, Color(0.5, 0.5, 0.0, 1.0), ADD);
-    //pointAnimation.drawCircle(pointPos, 1.0, 2.0, ColorHSV(0.7, 0.5, 1.0, 1.0), ADD);
-
-
-    //Random Circles
-    //randomCirclesAnimation.clear(Color(0.0, 0.05));
-    randomCirclesAnimation.clear(Color(0.0, 0.1));
-    if(randomF(1.0) > 0.97){
-        float w = 10;
-        float h = 7;
-        Vec2f min(middle.x - w, middle.y - h);
-        Vec2f max(middle.x + w, middle.y + h);
-        Vec2f pos(randomF(min.x, max.x), randomF(min.y, max.y));
-        float rad = randomF(2.0, 7.0);
-        randomCirclesAnimation.drawCircle(pos, rad, rad * 0.5, ColorHSV(randomF(1.0), 0.2, 1.0, 1.0));
-    }
-    for(int i = 0; i < 208; i++){
-        if(randomF(1000) > 970){
-            randomCirclesAnimation.setPixel(i, ColorHSV(0.6, 1.0, .3));
-        }
-    }
-
-    //nuit orage / 
-    //jour cadran / DVD
-
-
-    //DVD box
-    boxAnimation.clear(Color(0.0, 0.1));
-    static Vec2f boxPosition = middle;
-    static Vec2f boxSize(4.5, 4.5);
-    static Vec2f boxVel(0.1, 0.04);
-
-    static Vec2f box2Pos(middle.x - 4.0, middle.y - 4.0);
-    static Vec2f box2Vel = boxVel;
-    Color boxColor;
-    bool b_top = false;
-    bool b_bottom = false;
-    bool b_left = false;
-    bool b_right = false;
-
-    bool b_bounce = false;
-    if(boxPosition.x < boxSize.x * 0.5){
-        b_bounce = true;
-        b_left = true;
-    }
-    else if(boxPosition.x > width - boxSize.x * 0.5){
-        b_bounce = true;
-        b_right = true;
-    }
-
-    if(boxPosition.y < boxSize.y * 0.5){
-        b_bounce = true;
-        b_top = true;
-    }
-    else if(boxPosition.y > height - boxSize.y * 0.5){
-        b_bounce = true;
-        b_bottom = true;
-    }
-
-    
-    //if(b_bounce) boxColor = Color(1.0, 1.0, 1.0, 1.0);
-    /*else */boxColor = Color(1.0);
-    boxAnimation.drawBox(boxPosition, boxSize, 2.0, boxColor);
-    //boxAnimation.drawBox(box2Pos, boxSize, 2.0, Color(0.5, 0.0, 0.0, 0.25));
-    boxAnimation.drawBox(box2Pos, boxSize, 2.0, Color(0.0, 0.0, 1.0));
-    /*
-    if(b_top) for(int i = 0; i < 16; i++) boxAnimation.setPixel(i, Color(1.0, 1.0, 0.0));
-    if(b_bottom) for(int i = 192; i < 208; i++) boxAnimation.setPixel(i, Color(1.0, 1.0, 0.0));
-    if(b_left){
-        for(int i = 0; i < 7; i++) boxAnimation.setPixel(i * 32, Color(1.0, 0.5, 1.0));
-        for(int i = 0; i < 6; i++) boxAnimation.setPixel(31 + i * 32, Color(1.0, 0.5, 1.0));
-    }
-    if(b_right){
-        for(int i = 0; i < 7; i++) boxAnimation.setPixel(15 + i * 32, Color(1.0, 0.5, 0.0));
-        for(int i = 0; i < 6; i++) boxAnimation.setPixel(16 + i * 32, Color(1.0, 0.5, 0.0));
-    }
-    */
-    boxPosition.x += boxVel.x;
-    boxPosition.y += boxVel.y;
-    float bounceMargin = 1.0;
-    if(boxPosition.x < boxSize.x * 0.5 - bounceMargin || boxPosition.x > width - boxSize.x * 0.5 + bounceMargin) boxVel.x *= -1.0;
-    if(boxPosition.y < boxSize.y * 0.5 - bounceMargin || boxPosition.y > height - boxSize.y * 0.5 + bounceMargin) boxVel.y *= -1.0;
-
-    box2Pos.x += box2Vel.x;
-    box2Pos.y += box2Vel.y;
-    if(box2Pos.x < boxSize.x * 0.5 - bounceMargin || box2Pos.x > width - boxSize.x * 0.5 + bounceMargin) box2Vel.x *= -1.0;
-    if(box2Pos.y < boxSize.y * 0.5 - bounceMargin || box2Pos.y > height - boxSize.y * 0.5 + bounceMargin) box2Vel.y *= -1.0;
-
-
-
-
-    //ledStrip.addFrameBuffer(pointAnimation);
-    //ledStrip.addFrameBuffer(circleAnimation);
-    //ledStrip.addFrameBuffer(radiusAnimation);
-    //ledStrip.addFrameBuffer(randomCirclesAnimation);
-    ledStrip.addFrameBuffer(&boxAnimation);
-    ledStrip.display();
 }
