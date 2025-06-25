@@ -6,6 +6,7 @@ struct Vec2f{
     Vec2f(){}
     Vec2f(float x_, float y_) : x(x_), y(y_){}
     float dist(Vec2f& other){ return sqrt(sq(x - other.x) + sq(y - other.y)); }
+    float mag(){ return sqrt(sq(x) + sq(y)); }
     Vec2f lerp(const Vec2f& in, float mix){
         if(mix < 0.0) mix = 0.0;
         else if(mix > 0.0) mix = 1.0;
@@ -14,6 +15,14 @@ struct Vec2f{
     }
     float x = 0.0;
     float y = 0.0;
+    void rotate(float radians){
+        Vec2f rotated;
+        rotated.x = x * cos(radians) + y * -sin(radians);
+        rotated.y = x * sin(radians) + y * cos(radians);
+        x = rotated.x;
+        y = rotated.y;
+    }
+
 };
 Vec2f operator-(const Vec2f& a, const Vec2f& b){return Vec2f(a.x - b.x, a.y - b.y);}
 Vec2f operator+(const Vec2f& a, const Vec2f& b){return Vec2f(a.x + b.x, a.y + b.y);}
@@ -85,6 +94,11 @@ public:
     void flipY(){
         for(int i = 0; i < pixelCount; i++){
             positions[i].y *= -1.f;
+        }
+    }
+    void normalize(){
+        for(uint32_t i = 0; i < pixelCount; i++){
+            
         }
     }
 public:

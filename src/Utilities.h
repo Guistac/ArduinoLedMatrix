@@ -79,3 +79,23 @@ float iirFilter(float val, float target, float filter){
     else if(filter > 1.0) filter = 1.0;
     return val * (1.0 - filter) + target * filter;
 }
+
+
+void ledTest(){
+    pinMode(14, OUTPUT);
+    pinMode(15, OUTPUT);
+    while(true){
+        digitalWrite(14, HIGH);
+        //digitalWrite(15, HIGH);
+        digitalWrite(13, HIGH);
+        delay(500);
+        digitalWrite(14, LOW);
+        //digitalWrite(15, LOW);
+        digitalWrite(13, LOW);
+        delay(500);
+    }
+}
+
+float smoothstep(float x){
+    return x * x * (3.0f - 2.0f * x);
+}

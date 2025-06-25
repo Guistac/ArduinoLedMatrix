@@ -71,4 +71,11 @@ public:
     std::vector<Sequence> sequences = {};
     uint32_t sequenceIndex;
 
+    virtual void configureMatrix(const PixelMatrix& matrix) override {
+        Animation::configureMatrix(matrix);
+        for(size_t i = 0; i < sequences.size(); i++){
+            sequences[i].animation->configureMatrix(matrix);
+        }
+    }
+
 };

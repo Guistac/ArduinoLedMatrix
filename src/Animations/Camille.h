@@ -196,3 +196,53 @@ public:
 
     }
 };
+
+
+/*
+
+/*
+#include "SK6812_RGBW_Strip.h"
+int width = 16;
+int height = 13;
+uint32_t ledCount = width * height;
+OneWire_RGB_Strip ledStrip(0, 200);
+
+PondAnimation pond;
+RadarAnimation radar;
+MovingDotAnimation movingDot;
+LightningAnimation lighting;
+DvdAnimation dvd;
+std::vector<Animation*> animations = {
+    &pond,
+    &radar,
+    &movingDot,
+    &lighting,
+    &dvd
+};
+Sequencer sequencer({
+    Sequence(&pond,         180.0, 30.0),
+    Sequence(&radar,        180.0, 30.0),
+    Sequence(&movingDot,    180.0, 30.0),
+    Sequence(&lighting,     180.0, 30.0),
+    Sequence(&dvd,          180.0, 30.0)
+});
+Time::IntervalTimer frameTimer(100.0);
+
+    /*
+    //CAMILLE
+    PixelMatrix ledMatrix(ledCount);
+    int c = 0;
+    for(int y = 0; y < height; y++){
+        bool b_heightEven = y % 2 == 0;
+        for(int x = 0; x < width; x++){
+            ledMatrix.positions[c].y = y;
+            ledMatrix.positions[c].x = b_heightEven ? x : width - x - 1;
+            c++;
+        }
+    }
+    */
+    //for(auto animation : animations) animation->configureMatrix(ledMatrix);
+    //anim->configureMatrix(ledMatrix);
+    //sequencer.configureMatrix(ledMatrix);
+*/
+*/
